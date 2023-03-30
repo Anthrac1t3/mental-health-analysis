@@ -1,5 +1,6 @@
 # Project specific files
 login.json
+*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
