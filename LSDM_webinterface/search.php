@@ -9,7 +9,34 @@ if(isset($_POST['submit'])){
     $search = $_POST['search'];
 
     // Query the database to search for matching records
-    $query = "SELECT * FROM public.alone WHERE content LIKE '%$search%' ORDER BY tweet_id ASC LIMIT 100";
+    $query = "select * from (SELECT * FROM public.alone
+union all
+select * from public.blissful
+union all
+select * from public.bored
+union all
+select * from public.depressed
+			   union all
+select * from public.food
+			   union all
+select * from public.happy
+			   union all
+select * from public.joyful
+			   union all
+select * from public.loneliness
+			   union all
+select * from public.outing
+			   union all
+select * from public.sad
+			   union all
+select * from public.stressed
+			   union all
+select * from public.travel
+			   union all
+select * from public.vacation
+			  ) mt
+			  where content like '%$search%'
+ORDER BY tweet_id ASC, author ASC LIMIT 100";
     $result = pg_query($conn, $query);
     
    // Display the navbar
