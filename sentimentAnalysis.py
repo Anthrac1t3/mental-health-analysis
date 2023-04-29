@@ -12,7 +12,7 @@ threadLock = threading.Lock()
 global status
 status = {}
 
-directory = 'data'
+directory = 'upload'
 
 
 def display():

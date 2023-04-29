@@ -13,7 +13,7 @@ def remove_undefined_unicode_and_quotes(input_file, output_file):
     # Write cleaned data to output .csv file
     df.to_csv(output_file, encoding='utf-8', index=False)
 
-filesToClean = ["alone", "depressed", "loneliness", "vacation", "stressed", "blissful", "outing", "travel", "bored", "happy", "sad", "joyful", "food", "snack"]
+filesToClean = ["depressed"]
 
 # Create the upload directory if it does not exist
 if not os.path.exists('upload'):

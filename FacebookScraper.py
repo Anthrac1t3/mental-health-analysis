@@ -1,4 +1,4 @@
-import snscrape.modules.reddit as snreddit
+import snscrape.modules.facebook as snfacebook
 from snscrape.base import ScraperException
 import datetime as dt
 import time
@@ -80,13 +80,13 @@ for word in keyWords:
             # Creating list to append tweet data to
             tweetList = []
 
-            tweetScraper = snreddit.RedditSearchScraper(prompt, comments=False).get_items()
+            tweetScraper = snfacebook.FacebookCommunityScraper(prompt).get_items()
 
             # Using TwitterSearchScraper to scrape data and append tweets to list
             while len(tweetList) < tweetNum:
                 try:
                     tweet = next(tweetScraper)
-                    
+
                     tweetList.append([tweet.date, tweet.id, tweet.selftext.replace('\n', ' ').replace('\r', '').strip(), tweet.author])
                 # Catch any scraper exceptions
                 except ScraperException as se:
