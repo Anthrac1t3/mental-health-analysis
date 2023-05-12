@@ -6,57 +6,82 @@ from wordcloud import WordCloud
 import os
 import threading
 import time
+import pandas as pd
 
 threadLock = threading.Lock()
 
 global status
 status = {}
 
-directory = 'upload'
+directory = 'results'
 
 
 def display():
+    time.sleep(4)
     #for thread, status in status.items():
     #    print(f"Status: {status}")
     while threading.active_count() > 2:
+        time.sleep(1)
         os.system('cls' if os.name == 'nt' else 'clear')
         for value in status.values():
             print(value)
-        time.sleep(1)
 
     return
 
 
+def sanitizeText(df):
+    charactersToRemove = ['"', "'"]
+
+    # Remove undefined Unicode characters from the specified column
+    df.iloc[:, 2] = df.iloc[:, 2].apply(lambda x: ''.join([
+        c for c in x if c.isprintable() and c not in charactersToRemove]))
+
+    return df
+
+
+def loadCSV(fileName):
+    df = pd.read_csv(fileName, header=None, names=['time_stamp','tweet_id','content','author'], usecols=[0,1,2,3], encoding='utf-8')
+    df['mood'] = ""
+
+    return sanitizeText(df)
+
+
 def processCSV(fileName):
     global status
-    
+
     filePath = os.path.join(directory, fileName)
 
-    with open(filePath, "r", encoding="utf-8") as csvfile:  # Specify encoding as utf-8
-        reader = csv.reader(csvfile)
-        rows = []
-        for i, row in enumerate(reader):
+    with threadLock:
+        status[threading.current_thread().ident] = "Loading " + str(filePath)
+
+    fileOutPath = os.path.join(directory, "analyised-"+fileName)
+
+    df = loadCSV(filePath)
+    df = df.reset_index()
+
+    for i in df.index:
+        #Update current status
+        if i % 100 == 0:
             with threadLock:
                 status[threading.current_thread().ident] = "Row " + str(i) + " of file " + str(filePath)
-            if i == 0:
-                row.append("mood")
-                rows.append(row)
-            else:
-                analysis = TextBlob(row[2])
-                polarity = analysis.sentiment.polarity
-                if polarity > 0:
-                    row.append("positive")  # Append "positive" mood to the end of the row
-                elif polarity < 0:
-                    row.append("negative")  # Append "negative" mood to the end of the row
-                else:
-                    row.append("neutral")  # Append "neutral" mood to the end of the row
-                rows.append(row)
-        csvfile.close()
-    # Write results to the same CSV file
-    with open(filePath, "w", newline="", encoding="utf-8") as csvfile:  # Specify encoding as utf-8
-        writer = csv.writer(csvfile)
-        for row in rows:
-            writer.writerow(row)
+
+        #Preform the sentiment analysis
+        analysis = TextBlob(df.loc[i, 'content'])
+        polarity = analysis.sentiment.polarity
+        if polarity > 0:
+            df.loc[i, 'mood'] = "positive"# Append "positive" mood to the end of the row
+        elif polarity < 0:
+            df.loc[i, 'mood'] = "negative" # Append "negative" mood to the end of the row
+        else:
+            df.loc[i, 'mood'] = "neutral" # Append "neutral" mood to the end of the row
+
+    with threadLock:
+        status[threading.current_thread().ident] = "Writing to " + str(fileOutPath)
+
+    df.to_csv(fileOutPath, encoding='utf-8', index=False)
+
+    with threadLock:
+        status[threading.current_thread().ident] = "Completed " + str(filePath)
 
 
 def generateImages(fileName):
@@ -131,7 +156,7 @@ for thread in threads:
 
 displayThread.join()
 
-for fileName in os.listdir(directory):
-    generateImages(fileName)
+#for fileName in os.listdir(directory):
+    #generateImages(fileName)
 
 print("I'm done!")

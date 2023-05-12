@@ -56,7 +56,7 @@ dateList = generateDateList(2020, 1, 1)
 tweetNum = 1000
 
 # Set the keywords we are going to be using
-keyWords = ["depressed", "loneliness", "vacation"]
+keyWords = ["vacation"]
 #keyWords = ["stressed", "blissful", "outing", "travel", "snack"]
 #keyWords = ["bored", "happy", "sad", "joyful", "food"]
 
